@@ -15,10 +15,10 @@ const upload = multer({
   },
 });
 
-//api/my-hotels
 router.post(
     "/",
-    verifyToken, [
+  verifyToken,
+  [
         body("name").notEmpty().withMessage('Name is required'),
         body("city").notEmpty().withMessage('City is required'),
         body("country").notEmpty().withMessage('Country is required'),
@@ -32,16 +32,13 @@ router.post(
     try {
       const imageFiles = req.files as Express.Multer.File[];
       const newHotel: HotelType = req.body;
-
-      //upload the image to cloudinary
       const uploadPromises = imageFiles.map(async (image) => {
         const b64 = Buffer.from(image.buffer).toString("base64");
         let dataURI = "data:" + image.mimetype + ";base64," + b64;
         const res = await cloudinary.v2.uploader.upload(dataURI);
         return res.url;
       });
-
-      //if the upload was successful, add the urls to the new hotel
+      
       const imageUrls = await Promise.all(uploadPromises);
       newHotel.imageUrls = imageUrls;
       newHotel.lastUpdated = new Date();
